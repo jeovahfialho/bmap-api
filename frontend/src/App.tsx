@@ -54,7 +54,11 @@ const App: React.FC = () => {
       const response = await cardsService.getInitiatives(filters);
       if (response.success) {
         setCards(response.data);
-        setPagination(response.pagination);
+        if ('pagination' in response && response.pagination) {
+          setPagination(response.pagination);
+        } else {
+          setPagination(null);
+        }
         setShowResults(true);
       } else {
         throw new Error('Resposta da API não foi bem-sucedida');
