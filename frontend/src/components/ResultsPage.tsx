@@ -12,16 +12,14 @@ interface Board {
 interface ResultsPageProps {
   cards: ProcessedCard[];
   selectedBoard: Board;
-  page: number;
-  perPage: number;
+  pagination: { all_pages: number, current_page: number, results_per_page: number } | null;
   onBackToSearch: () => void;
 }
 
 const ResultsPage: React.FC<ResultsPageProps> = ({ 
   cards, 
   selectedBoard, 
-  page, 
-  perPage, 
+  pagination, 
   onBackToSearch 
 }) => {
   const totalHistories = cards.reduce((acc, card) => acc + card.children.length, 0);
@@ -36,10 +34,14 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
           <div className="results-info">
             <h2>📋 Resultados: {selectedBoard.name}</h2>
             <div className="results-stats">
-              <span className="stat-item">📊 Página {page}</span>
               <span className="stat-item">🎯 {cards.length} iniciativas</span>
               <span className="stat-item">📚 {totalHistories} histórias</span>
-              <span className="stat-item">⚙️ {perPage} por página</span>
+              {pagination && (
+                <>
+                  <span className="stat-item">📊 Página {pagination.current_page} de {pagination.all_pages}</span>
+                  <span className="stat-item">⚙️ {pagination.results_per_page} por página</span>
+                </>
+              )}
             </div>
           </div>
         </div>

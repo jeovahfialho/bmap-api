@@ -22,14 +22,16 @@ export class CardsController {
       
       console.log('[CardsController] Filtros recebidos:', filters);
       console.log('[CardsController] Chamando cardsService.getInitiativesWithHistories()...');
-      const initiatives = await this.cardsService.getInitiativesWithHistories(filters);
+      const result = await this.cardsService.getInitiativesWithHistories(filters);
       
-      console.log(`[CardsController] Sucesso! Encontradas ${initiatives.length} iniciativas`);
-      console.log('[CardsController] Primeiras iniciativas:', initiatives.slice(0, 2));
+      console.log(`[CardsController] Sucesso! Encontradas ${result.processedCards.length} iniciativas`);
+      console.log('[CardsController] Paginação:', result.pagination);
+      console.log('[CardsController] Primeiras iniciativas:', result.processedCards.slice(0, 2));
       
       res.json({
         success: true,
-        data: initiatives
+        data: result.processedCards,
+        pagination: result.pagination
       });
     } catch (error) {
       console.error('[CardsController] Erro ao buscar iniciativas:', error);

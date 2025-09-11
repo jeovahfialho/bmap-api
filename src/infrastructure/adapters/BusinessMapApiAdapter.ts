@@ -3,6 +3,11 @@ import { Card } from '../../domain/entities/Card';
 
 export interface BusinessMapApiResponse {
   data: {
+    pagination: {
+      all_pages: number;
+      current_page: number;
+      results_per_page: number;
+    };
     data: Array<{
       card_id: number;
       title: string;
@@ -101,7 +106,7 @@ export class BusinessMapApiAdapter {
     throw new Error('Erro inesperado ao buscar boards');
   }
 
-  async fetchCards(queryParams?: Record<string, any>): Promise<Card[]> {
+  async fetchCards(queryParams?: Record<string, any>): Promise<{ cards: Card[], pagination: { all_pages: number, current_page: number, results_per_page: number } }> {
     const maxRetries = 15;
     const baseDelay = 1000; // 1 segundo
     
@@ -125,10 +130,6 @@ export class BusinessMapApiAdapter {
       urlParams.append('type_ids', '2'); // Iniciativas
     }
     
-    if (!queryParams?.per_page) {
-      urlParams.append('per_page', '1000'); // Máximo permitido
-    }
-    
     if (!queryParams?.expand) {
       urlParams.append('expand', 'linked_cards');
     }
@@ -145,6 +146,7 @@ export class BusinessMapApiAdapter {
         const response = await axios.get<BusinessMapApiResponse>(fullUrl);
 
         console.log(`[BusinessMapApiAdapter] Sucesso! ${response.data.data.data.length} cards obtidos`);
+        console.log(`[BusinessMapApiAdapter] Paginação:`, response.data.data.pagination);
         
         if (!response.data?.data?.data) {
           console.error('[BusinessMapApiAdapter] Estrutura de resposta inesperada:', response.data);
@@ -152,6 +154,7 @@ export class BusinessMapApiAdapter {
         }
 
         const rawCards = response.data.data.data;
+        const pagination = response.data.data.pagination;
         
         const mappedCards = rawCards.map(card => ({
           card_id: card.card_id,
@@ -161,7 +164,7 @@ export class BusinessMapApiAdapter {
           linked_cards: card.linked_cards || []
         }));
         
-        return mappedCards;
+        return { cards: mappedCards, pagination };
         
       } catch (error) {
         

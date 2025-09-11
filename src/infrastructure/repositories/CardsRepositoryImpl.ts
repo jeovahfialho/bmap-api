@@ -5,13 +5,14 @@ import { BusinessMapApiAdapter } from '../adapters/BusinessMapApiAdapter';
 export class CardsRepositoryImpl implements CardsRepository {
   constructor(private apiAdapter: BusinessMapApiAdapter) {}
 
-  async getAllCards(queryParams?: Record<string, any>): Promise<Card[]> {
+  async getAllCards(queryParams?: Record<string, any>): Promise<{ cards: Card[], pagination: { all_pages: number, current_page: number, results_per_page: number } }> {
     console.log('[CardsRepositoryImpl] Iniciando busca de cards com filtros...');
     
     try {
-      const cards = await this.apiAdapter.fetchCards(queryParams);
-      console.log(`[CardsRepositoryImpl] Cards obtidos com sucesso: ${cards.length}`);
-      return cards;
+      const result = await this.apiAdapter.fetchCards(queryParams);
+      console.log(`[CardsRepositoryImpl] Cards obtidos com sucesso: ${result.cards.length}`);
+      console.log(`[CardsRepositoryImpl] Paginação:`, result.pagination);
+      return result;
     } catch (error) {
       console.error('[CardsRepositoryImpl] Erro ao buscar cards:', error);
       throw error;

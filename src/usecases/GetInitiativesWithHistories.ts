@@ -5,14 +5,17 @@ import { Card, ProcessedCard } from '../domain/entities/Card';
 export class GetInitiativesWithHistories implements CardsService {
   constructor(private cardsRepository: CardsRepository) {}
 
-  async getInitiativesWithHistories(filters?: Record<string, any>): Promise<ProcessedCard[]> {
+  async getInitiativesWithHistories(filters?: Record<string, any>): Promise<{ processedCards: ProcessedCard[], pagination: { all_pages: number, current_page: number, results_per_page: number } }> {
     console.log('[GetInitiativesWithHistories] Iniciando busca de iniciativas com histórias...');
     
     try {
       console.log('[GetInitiativesWithHistories] Buscando cards com filtros...');
       console.log('[GetInitiativesWithHistories] Filtros aplicados:', filters);
-      const allCards = await this.cardsRepository.getAllCards(filters);
+      const result = await this.cardsRepository.getAllCards(filters);
+      const allCards = result.cards;
+      const pagination = result.pagination;
       console.log(`[GetInitiativesWithHistories] Total de cards obtidos: ${allCards.length}`);
+      console.log(`[GetInitiativesWithHistories] Paginação:`, pagination);
       
       console.log('[GetInitiativesWithHistories] Filtrando cards relevantes (type_id 1 ou 2)...');
       const relevantCards = allCards.filter(card => card.type_id === 1 || card.type_id === 2);
@@ -32,7 +35,7 @@ export class GetInitiativesWithHistories implements CardsService {
       );
       console.log(`[GetInitiativesWithHistories] Iniciativas processadas: ${processedInitiatives.length}`);
       
-      return processedInitiatives;
+      return { processedCards: processedInitiatives, pagination };
     } catch (error) {
       console.error('[GetInitiativesWithHistories] Erro durante o processamento:', error);
       throw error;

@@ -22,7 +22,7 @@ const App: React.FC = () => {
   const [boardsLoading, setBoardsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
-  const [searchParams, setSearchParams] = useState<{page: number, perPage: number}>({page: 1, perPage: 200});
+  const [pagination, setPagination] = useState<{all_pages: number, current_page: number, results_per_page: number} | null>(null);
 
   const fetchBoards = async () => {
     console.log('[App] Iniciando busca de boards...');
@@ -54,10 +54,7 @@ const App: React.FC = () => {
       const response = await cardsService.getInitiatives(filters);
       if (response.success) {
         setCards(response.data);
-        setSearchParams({
-          page: filters?.page || 1,
-          perPage: filters?.per_page || 200
-        });
+        setPagination(response.pagination);
         setShowResults(true);
       } else {
         throw new Error('Resposta da API não foi bem-sucedida');
@@ -94,8 +91,7 @@ const App: React.FC = () => {
       <ResultsPage
         cards={cards}
         selectedBoard={selectedBoard}
-        page={searchParams.page}
-        perPage={searchParams.perPage}
+        pagination={pagination}
         onBackToSearch={handleBackToSearch}
       />
     );

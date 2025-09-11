@@ -25,9 +25,6 @@ const BoardSelection: React.FC<BoardSelectionProps> = ({
 }) => {
   console.log(`[BoardSelection] ${boards.length} boards disponíveis`);
   
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(200);
-
   const handleBoardChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const boardId = parseInt(e.target.value);
     
@@ -47,12 +44,10 @@ const BoardSelection: React.FC<BoardSelectionProps> = ({
     }
 
     const filters = {
-      board_ids: [selectedBoard.board_id],
-      page,
-      per_page: perPage
+      board_ids: [selectedBoard.board_id]
     };
     
-    console.log(`[BoardSelection] Buscando cards: ${selectedBoard.name}, página ${page}, ${perPage} por página`);
+    console.log(`[BoardSelection] Buscando todos os cards do board: ${selectedBoard.name}`);
     onSearch(filters);
   };
 
@@ -103,40 +98,6 @@ const BoardSelection: React.FC<BoardSelectionProps> = ({
 
         {selectedBoard && (
           <div className="search-options">
-            <div className="options-row">
-              <div className="form-group">
-                <label htmlFor="page-input" className="form-label">
-                  📄 Página:
-                </label>
-                <input
-                  id="page-input"
-                  type="number"
-                  min="1"
-                  value={page}
-                  onChange={(e) => setPage(parseInt(e.target.value) || 1)}
-                  className="form-input small"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="per-page-select" className="form-label">
-                  📊 Cards por página:
-                </label>
-                <select
-                  id="per-page-select"
-                  value={perPage}
-                  onChange={(e) => setPerPage(parseInt(e.target.value))}
-                  className="form-select"
-                >
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                  <option value={200}>200</option>
-                  <option value={500}>500</option>
-                  <option value={1000}>1000</option>
-                </select>
-              </div>
-            </div>
-
             <div className="search-button-container">
               <button 
                 className="search-button" 
@@ -155,9 +116,7 @@ const BoardSelection: React.FC<BoardSelectionProps> = ({
               <div className="info-card">
                 <strong>Board selecionado:</strong> {selectedBoard.name}
                 <br />
-                <strong>Configuração:</strong> Página {page}, {perPage} cards por página
-                <br />
-                <small>💡 Serão buscadas apenas iniciativas (tipo 2) e histórias (tipo 1)</small>
+                <small>💡 Serão buscadas todas as iniciativas (tipo 2) e histórias (tipo 1) do board</small>
               </div>
             </div>
           </div>
