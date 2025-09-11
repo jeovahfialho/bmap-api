@@ -49,8 +49,8 @@ body {
 
 .cards-container {
   display: grid;
-  gap: 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
 .card {
@@ -77,18 +77,18 @@ body {
 }
 
 .card-header {
-  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  padding: 1rem 1rem 0.5rem 1rem;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .card-title {
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #2d3748;
-  line-height: 1.4;
+  line-height: 1.3;
   flex: 1;
 }
 
@@ -113,33 +113,34 @@ body {
 }
 
 .card-content {
-  padding: 0 1.5rem 1.5rem 1.5rem;
+  padding: 0 1rem 1rem 1rem;
 }
 
 .card-description {
   color: #4a5568;
-  line-height: 1.6;
-  margin-bottom: 1rem;
+  line-height: 1.5;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
 }
 
 .card-id {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #718096;
   font-weight: 500;
 }
 
 .children-container {
-  margin-top: 1.5rem;
-  padding: 1rem 1.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
   background: #f7fafc;
   border-top: 1px solid #e2e8f0;
 }
 
 .children-title {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: #2d3748;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -151,7 +152,7 @@ body {
 
 .children-list {
   display: grid;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .loading-container {

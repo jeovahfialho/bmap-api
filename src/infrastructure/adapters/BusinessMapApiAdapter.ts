@@ -16,6 +16,19 @@ export interface BusinessMapApiResponse {
   };
 }
 
+export interface CardDetailResponse {
+  data: {
+    card_id: number;
+    title: string;
+    description: string;
+    type_id: number;
+    linked_cards: Array<{
+      card_id: number;
+      link_type: 'child' | 'parent';
+    }>;
+  };
+}
+
 export class BusinessMapApiAdapter {
   private readonly baseUrl = 'middleware.bi.businessmap.dem.intranet.bb.com.br';
 
@@ -101,6 +114,66 @@ export class BusinessMapApiAdapter {
     }
     
     throw new Error(`Erro inesperado: todas as ${maxRetries} tentativas foram esgotadas`);
+  }
+
+  async fetchCardDetails(cardId: number): Promise<Card> {
+    const maxRetries = 5;
+    const baseDelay = 500;
+    
+    console.log(`[BusinessMapApiAdapter] Buscando detalhes do card ${cardId}...`);
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`[BusinessMapApiAdapter] Tentativa ${attempt}/${maxRetries} para card ${cardId}`);
+        
+        const response = await axios.get<CardDetailResponse>(
+          `http://${this.baseUrl}/api/v2/cards/${cardId}`
+        );
+
+        console.log(`[BusinessMapApiAdapter] Detalhes do card ${cardId} obtidos com sucesso!`);
+        
+        const card = response.data.data;
+        return {
+          card_id: card.card_id,
+          title: card.title,
+          description: card.description || undefined,
+          type_id: card.type_id,
+          linked_cards: card.linked_cards || []
+        };
+        
+      } catch (error) {
+        console.error(`[BusinessMapApiAdapter] Erro na tentativa ${attempt} para card ${cardId}:`, error);
+        
+        if (axios.isAxiosError(error)) {
+          const status = error.response?.status;
+          
+          if (status === 429) {
+            if (attempt < maxRetries) {
+              const delay = baseDelay * Math.pow(1.5, attempt - 1);
+              console.log(`[BusinessMapApiAdapter] Rate limit para card ${cardId}. Aguardando ${delay}ms...`);
+              await this.sleep(delay);
+              continue;
+            } else {
+              console.error(`[BusinessMapApiAdapter] Rate limit esgotado para card ${cardId}`);
+              throw new Error(`Rate limit atingido para card ${cardId}`);
+            }
+          }
+          
+          throw new Error(`Erro HTTP ${status} ao buscar detalhes do card ${cardId}`);
+        }
+        
+        if (attempt < maxRetries) {
+          const delay = baseDelay * attempt;
+          console.log(`[BusinessMapApiAdapter] Erro de rede para card ${cardId}. Aguardando ${delay}ms...`);
+          await this.sleep(delay);
+          continue;
+        }
+        
+        throw new Error(`Erro ao buscar detalhes do card ${cardId}: ${error instanceof Error ? error.message : error}`);
+      }
+    }
+    
+    throw new Error(`Erro inesperado ao buscar detalhes do card ${cardId}`);
   }
 
   private sleep(ms: number): Promise<void> {
