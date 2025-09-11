@@ -2,15 +2,41 @@ import React, { useState, useEffect } from 'react';
 import CardComponent from './components/CardComponent';
 import LoadingSpinner from './components/LoadingSpinner';
 import ErrorMessage from './components/ErrorMessage';
-import FiltersPanel from './components/FiltersPanel';
+import BoardSelection from './components/BoardSelection';
 import { ProcessedCard } from './types/Card';
 import { cardsService } from './services/cardsService';
 import './App.css';
 
+interface Board {
+  board_id: number;
+  name: string;
+  is_archived: boolean;
+}
+
 const App: React.FC = () => {
+  const [boards, setBoards] = useState<Board[]>([]);
+  const [selectedBoard, setSelectedBoard] = useState<Board | null>(null);
   const [cards, setCards] = useState<ProcessedCard[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [boardsLoading, setBoardsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const fetchBoards = async () => {
+    setBoardsLoading(true);
+    try {
+      const response = await fetch('/api/boards');
+      const result = await response.json();
+      if (result.success) {
+        setBoards(result.data);
+      } else {
+        throw new Error('Erro ao buscar boards');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar boards');
+    } finally {
+      setBoardsLoading(false);
+    }
+  };
 
   const fetchCards = async (filters?: Record<string, any>) => {
     try {
@@ -30,16 +56,8 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchCards();
+    fetchBoards();
   }, []);
-
-  if (loading) {
-    return <LoadingSpinner />;
-  }
-
-  if (error) {
-    return <ErrorMessage message={error} onRetry={fetchCards} />;
-  }
 
   return (
     <div className="App">
@@ -49,25 +67,47 @@ const App: React.FC = () => {
       </header>
 
       <main className="app-main">
-        <FiltersPanel onApplyFilters={fetchCards} loading={loading} />
-        
-        {cards.length === 0 ? (
-          <div className="empty-state">
-            <p>Nenhuma iniciativa encontrada.</p>
-          </div>
+        {boardsLoading ? (
+          <LoadingSpinner />
+        ) : error ? (
+          <ErrorMessage message={error} onRetry={() => selectedBoard ? fetchCards() : fetchBoards()} />
         ) : (
-          <div className="cards-container">
-            {cards.map((card) => (
-              <CardComponent key={card.id} card={card} />
-            ))}
-          </div>
+          <>
+            <BoardSelection 
+              boards={boards}
+              selectedBoard={selectedBoard}
+              onBoardSelect={setSelectedBoard}
+              onSearch={fetchCards}
+              loading={loading}
+            />
+            
+            {loading && <LoadingSpinner />}
+            
+            {cards.length > 0 && (
+              <div className="cards-container">
+                {cards.map((card) => (
+                  <CardComponent key={card.id} card={card} />
+                ))}
+              </div>
+            )}
+            
+            {!loading && cards.length === 0 && selectedBoard && (
+              <div className="empty-state">
+                <p>Nenhuma iniciativa encontrada no board "{selectedBoard.name}".</p>
+                <p>Tente ajustar os filtros ou selecionar outro board.</p>
+              </div>
+            )}
+          </>
         )}
       </main>
 
-      <footer className="app-footer">
-        <p>Total de iniciativas: {cards.length}</p>
-        <p>Total de histórias: {cards.reduce((acc, card) => acc + card.children.length, 0)}</p>
-      </footer>
+      {cards.length > 0 && (
+        <footer className="app-footer">
+          <p>Board: {selectedBoard?.name}</p>
+          <p>Total de iniciativas: {cards.length}</p>
+          <p>Total de histórias: {cards.reduce((acc, card) => acc + card.children.length, 0)}</p>
+        </footer>
+      )}
     </div>
   );
 };
