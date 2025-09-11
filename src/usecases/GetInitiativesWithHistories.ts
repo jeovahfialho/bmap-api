@@ -64,23 +64,22 @@ export class GetInitiativesWithHistories implements CardsService {
 
   private async processInitiativeWithChildren(initiative: Card, allCards: Card[]): Promise<ProcessedCard> {
     console.log(`[GetInitiativesWithHistories] Processando iniciativa ${initiative.card_id}: "${initiative.title}"`);
-    console.log(`[GetInitiativesWithHistories] linked_cards:`, initiative.linked_cards);
     
     // Verifica se linked_cards existe e é um array
     const linkedCards = initiative.linked_cards || [];
-    console.log(`[GetInitiativesWithHistories] linkedCards tratado:`, linkedCards);
     
     const childrenIds = linkedCards
       .filter(link => link && link.link_type === 'child')
       .map(link => link.card_id);
     
-    console.log(`[GetInitiativesWithHistories] IDs dos filhos encontrados:`, childrenIds);
+    console.log(`[GetInitiativesWithHistories] Iniciativa ${initiative.card_id} tem ${childrenIds.length} filhos: [${childrenIds.join(', ')}]`);
 
     const childrenCards = childrenIds
       .map(childId => allCards.find(card => card.card_id === childId))
       .filter(card => card !== undefined) as Card[];
     
-    console.log(`[GetInitiativesWithHistories] Buscando detalhes de ${childrenCards.length} histórias filhas...`);
+    console.log(`[GetInitiativesWithHistories] Encontrados ${childrenCards.length} cards filhos na lista total`);
+    console.log(`[GetInitiativesWithHistories] Cards filhos:`, childrenCards.map(c => `${c.card_id} (type: ${c.type_id})`));
     
     const children = [];
     for (const card of childrenCards) {

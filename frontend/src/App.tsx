@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import CardComponent from './components/CardComponent';
 import LoadingSpinner from './components/LoadingSpinner';
 import ErrorMessage from './components/ErrorMessage';
 import BoardSelection from './components/BoardSelection';
+import ResultsPage from './components/ResultsPage';
 import { ProcessedCard } from './types/Card';
 import { cardsService } from './services/cardsService';
 import './App.css';
@@ -21,6 +21,8 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [boardsLoading, setBoardsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showResults, setShowResults] = useState(false);
+  const [searchParams, setSearchParams] = useState<{page: number, perPage: number}>({page: 1, perPage: 200});
 
   const fetchBoards = async () => {
     console.log('[App] Iniciando busca de boards...');
@@ -52,6 +54,11 @@ const App: React.FC = () => {
       const response = await cardsService.getInitiatives(filters);
       if (response.success) {
         setCards(response.data);
+        setSearchParams({
+          page: filters?.page || 1,
+          perPage: filters?.per_page || 200
+        });
+        setShowResults(true);
       } else {
         throw new Error('Resposta da API não foi bem-sucedida');
       }
@@ -62,11 +69,39 @@ const App: React.FC = () => {
     }
   };
 
+  const handleBackToSearch = () => {
+    setShowResults(false);
+    setCards([]);
+    setError(null);
+  };
+
   useEffect(() => {
     console.log('[App] useEffect executado - iniciando busca de boards...');
     fetchBoards();
   }, []);
 
+  // Se estiver mostrando resultados
+  if (showResults && selectedBoard) {
+    if (loading) {
+      return <LoadingSpinner />;
+    }
+    
+    if (error) {
+      return <ErrorMessage message={error} onRetry={handleBackToSearch} />;
+    }
+
+    return (
+      <ResultsPage
+        cards={cards}
+        selectedBoard={selectedBoard}
+        page={searchParams.page}
+        perPage={searchParams.perPage}
+        onBackToSearch={handleBackToSearch}
+      />
+    );
+  }
+
+  // Tela inicial de seleção
   return (
     <div className="App">
       <header className="app-header">
@@ -78,44 +113,19 @@ const App: React.FC = () => {
         {boardsLoading ? (
           <LoadingSpinner />
         ) : error ? (
-          <ErrorMessage message={error} onRetry={() => selectedBoard ? fetchCards() : fetchBoards()} />
+          <ErrorMessage message={error} onRetry={fetchBoards} />
         ) : (
-          <>
-            <BoardSelection 
-              boards={boards}
-              selectedBoard={selectedBoard}
-              onBoardSelect={setSelectedBoard}
-              onSearch={fetchCards}
-              loading={loading}
-            />
-            
-            {loading && <LoadingSpinner />}
-            
-            {cards.length > 0 && (
-              <div className="cards-container">
-                {cards.map((card) => (
-                  <CardComponent key={card.id} card={card} />
-                ))}
-              </div>
-            )}
-            
-            {!loading && cards.length === 0 && selectedBoard && (
-              <div className="empty-state">
-                <p>Nenhuma iniciativa encontrada no board "{selectedBoard.name}".</p>
-                <p>Tente ajustar os filtros ou selecionar outro board.</p>
-              </div>
-            )}
-          </>
+          <BoardSelection 
+            boards={boards}
+            selectedBoard={selectedBoard}
+            onBoardSelect={setSelectedBoard}
+            onSearch={fetchCards}
+            loading={loading}
+          />
         )}
-      </main>
 
-      {cards.length > 0 && (
-        <footer className="app-footer">
-          <p>Board: {selectedBoard?.name}</p>
-          <p>Total de iniciativas: {cards.length}</p>
-          <p>Total de histórias: {cards.reduce((acc, card) => acc + card.children.length, 0)}</p>
-        </footer>
-      )}
+        {loading && <LoadingSpinner />}
+      </main>
     </div>
   );
 };
