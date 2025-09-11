@@ -12,5 +12,6 @@ const getInitiativesUseCase = new GetInitiativesWithHistories(cardsRepository);
 const cardsController = new CardsController(getInitiativesUseCase);
 
 router.get('/initiatives', (req, res) => cardsController.getInitiatives(req, res));
+router.get('/boards', (req, res) => cardsController.getBoards(req, res));
 
 export default router;

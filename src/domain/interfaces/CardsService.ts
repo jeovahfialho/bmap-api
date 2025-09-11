@@ -1,5 +1,5 @@
 import { ProcessedCard } from '../entities/Card';
 
 export interface CardsService {
-  getInitiativesWithHistories(): Promise<ProcessedCard[]>;
+  getInitiativesWithHistories(filters?: Record<string, any>): Promise<ProcessedCard[]>;
 }

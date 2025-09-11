@@ -29,24 +29,119 @@ export interface CardDetailResponse {
   };
 }
 
+export interface BoardsResponse {
+  data: Array<{
+    board_id: number;
+    workspace_id: number;
+    is_archived: number;
+    name: string;
+    description: string;
+    type: number;
+  }>;
+}
+
+export interface Board {
+  board_id: number;
+  name: string;
+  is_archived: boolean;
+}
+
 export class BusinessMapApiAdapter {
   private readonly baseUrl = 'middleware.bi.businessmap.dem.intranet.bb.com.br';
 
-  async fetchCards(): Promise<Card[]> {
+  async fetchBoards(): Promise<Board[]> {
+    const maxRetries = 5;
+    const baseDelay = 500;
+    
+    console.log('[BusinessMapApiAdapter] Buscando boards disponíveis...');
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`[BusinessMapApiAdapter] Tentativa ${attempt}/${maxRetries} para boards`);
+        
+        const response = await axios.get<BoardsResponse>(
+          `http://${this.baseUrl}/api/v2/boards`
+        );
+
+        console.log(`[BusinessMapApiAdapter] Boards obtidos com sucesso! Total: ${response.data.data.length}`);
+        
+        const boards = response.data.data.map(board => ({
+          board_id: board.board_id,
+          name: board.name,
+          is_archived: board.is_archived === 1
+        }));
+        
+        return boards;
+        
+      } catch (error) {
+        console.error(`[BusinessMapApiAdapter] Erro na tentativa ${attempt} para boards:`, error);
+        
+        if (axios.isAxiosError(error) && error.response?.status === 429) {
+          if (attempt < maxRetries) {
+            const delay = baseDelay * Math.pow(1.5, attempt - 1);
+            console.log(`[BusinessMapApiAdapter] Rate limit para boards. Aguardando ${delay}ms...`);
+            await this.sleep(delay);
+            continue;
+          }
+        }
+        
+        if (attempt < maxRetries) {
+          const delay = baseDelay * attempt;
+          await this.sleep(delay);
+          continue;
+        }
+        
+        throw new Error(`Erro ao buscar boards: ${error instanceof Error ? error.message : error}`);
+      }
+    }
+    
+    throw new Error('Erro inesperado ao buscar boards');
+  }
+
+  async fetchCards(queryParams?: Record<string, any>): Promise<Card[]> {
     const maxRetries = 15;
     const baseDelay = 1000; // 1 segundo
     
+    // Constrói a URL com parâmetros de query
+    const urlParams = new URLSearchParams();
+    
+    // Adiciona parâmetros padrões se não especificados
+    if (queryParams) {
+      Object.entries(queryParams).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach(v => urlParams.append(key, v.toString()));
+        } else if (value !== undefined && value !== null) {
+          urlParams.append(key, value.toString());
+        }
+      });
+    }
+    
+    // Parâmetros padrão para otimizar a busca
+    if (!queryParams?.type_ids) {
+      urlParams.append('type_ids', '1'); // Histórias
+      urlParams.append('type_ids', '2'); // Iniciativas
+    }
+    
+    if (!queryParams?.per_page) {
+      urlParams.append('per_page', '1000'); // Máximo permitido
+    }
+    
+    if (!queryParams?.expand) {
+      urlParams.append('expand', 'linked_cards');
+    }
+    
+    const queryString = urlParams.toString();
+    const fullUrl = `http://${this.baseUrl}/api/v2/cards${queryString ? `?${queryString}` : ''}`;
+    
     console.log('[BusinessMapApiAdapter] Iniciando requisição para a API externa...');
-    console.log(`[BusinessMapApiAdapter] URL: http://${this.baseUrl}/api/v2/cards`);
+    console.log(`[BusinessMapApiAdapter] URL: ${fullUrl}`);
     console.log(`[BusinessMapApiAdapter] Máximo de tentativas: ${maxRetries}`);
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         console.log(`[BusinessMapApiAdapter] Tentativa ${attempt}/${maxRetries}`);
         
-        const response = await axios.get<BusinessMapApiResponse>(
-          `http://${this.baseUrl}/api/v2/cards`
-        );
+        const response = await axios.get<BusinessMapApiResponse>(fullUrl);
 
         console.log(`[BusinessMapApiAdapter] Sucesso na tentativa ${attempt}! Status: ${response.status}`);
         console.log(`[BusinessMapApiAdapter] Estrutura da resposta:`, Object.keys(response.data));

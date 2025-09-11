@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import CardComponent from './components/CardComponent';
 import LoadingSpinner from './components/LoadingSpinner';
 import ErrorMessage from './components/ErrorMessage';
+import FiltersPanel from './components/FiltersPanel';
 import { ProcessedCard } from './types/Card';
 import { cardsService } from './services/cardsService';
 import './App.css';
@@ -11,11 +12,11 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchCards = async () => {
+  const fetchCards = async (filters?: Record<string, any>) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await cardsService.getInitiatives();
+      const response = await cardsService.getInitiatives(filters);
       if (response.success) {
         setCards(response.data);
       } else {
@@ -48,6 +49,8 @@ const App: React.FC = () => {
       </header>
 
       <main className="app-main">
+        <FiltersPanel onApplyFilters={fetchCards} loading={loading} />
+        
         {cards.length === 0 ? (
           <div className="empty-state">
             <p>Nenhuma iniciativa encontrada.</p>

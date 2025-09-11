@@ -1,4 +1,5 @@
 import React from 'react';
+import parse from 'html-react-parser';
 import { ProcessedCard } from '../types/Card';
 
 interface CardProps {
@@ -17,7 +18,9 @@ const CardComponent: React.FC<CardProps> = ({ card, isChild = false }) => {
       </div>
       
       <div className="card-content">
-        <p className="card-description">{card.description || 'Sem descrição'}</p>
+        <div className="card-description">
+          {card.description ? parse(card.description) : <p>Sem descrição</p>}
+        </div>
         <p className="card-id">ID: {card.id}</p>
       </div>
 

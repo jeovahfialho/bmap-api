@@ -71,9 +71,11 @@ body {
 }
 
 .child-card {
-  margin: 1rem 0;
+  margin: 0.75rem 0;
   border-left: 3px solid #48bb78;
   background: #f8fffe;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .card-header {
@@ -123,6 +125,46 @@ body {
   font-size: 0.9rem;
 }
 
+/* Estilos para HTML renderizado nas descrições */
+.card-description p {
+  margin: 0.5rem 0;
+}
+
+.card-description strong {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.card-description u {
+  text-decoration: underline;
+}
+
+.card-description .text-huge {
+  font-size: 1.1rem;
+}
+
+.card-description .text-big {
+  font-size: 1rem;
+}
+
+.card-description ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.card-description li {
+  margin: 0.25rem 0;
+}
+
+.card-description span[style*="color:hsl(0,0%,60%)"] {
+  color: #718096 !important;
+  font-style: italic;
+}
+
+.card-description span[style*="color:hsl(0,0%,90%)"] {
+  color: #e2e8f0 !important;
+}
+
 .card-id {
   font-size: 0.8rem;
   color: #718096;
@@ -151,8 +193,10 @@ body {
 }
 
 .children-list {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0.75rem;
+  width: 100%;
 }
 
 .loading-container {
@@ -259,6 +303,170 @@ body {
 .app-footer p {
   margin: 0;
   font-weight: 500;
+}
+
+/* Estilos do Painel de Filtros */
+.filters-panel {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e1e8ed;
+  margin-bottom: 2rem;
+  max-width: 100%;
+}
+
+.filters-header h3 {
+  margin: 0 0 1.5rem 0;
+  color: #2d3748;
+  font-size: 1.2rem;
+  border-bottom: 2px solid #667eea;
+  padding-bottom: 0.5rem;
+}
+
+.filter-section {
+  margin-bottom: 1.5rem;
+}
+
+.filter-label {
+  display: block;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.board-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.filter-action-btn {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  color: #4a5568;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-action-btn:hover {
+  background: #edf2f7;
+  border-color: #cbd5e0;
+}
+
+.board-group {
+  margin-bottom: 1rem;
+}
+
+.board-group-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.board-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.5rem;
+  background: #f9f9f9;
+}
+
+.board-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.board-checkbox:hover {
+  background-color: #f0f4f8;
+}
+
+.board-checkbox.archived .board-name {
+  color: #718096;
+  font-style: italic;
+}
+
+.board-name {
+  font-size: 0.85rem;
+  color: #2d3748;
+}
+
+.filter-input, .filter-select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease;
+}
+
+.filter-input:focus, .filter-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.filter-actions {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.apply-filters-btn {
+  width: 100%;
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.apply-filters-btn:hover:not(:disabled) {
+  background: #5a67d8;
+}
+
+.apply-filters-btn:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+.filter-info {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #f7fafc;
+  border-radius: 6px;
+  border-left: 3px solid #667eea;
+}
+
+.filter-info p {
+  margin: 0.2rem 0;
+  font-size: 0.8rem;
+  color: #4a5568;
+}
+
+.loading-text {
+  color: #718096;
+  font-style: italic;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 1rem;
 }
 
 @media (max-width: 768px) {

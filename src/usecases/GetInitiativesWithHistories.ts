@@ -5,12 +5,13 @@ import { Card, ProcessedCard } from '../domain/entities/Card';
 export class GetInitiativesWithHistories implements CardsService {
   constructor(private cardsRepository: CardsRepository) {}
 
-  async getInitiativesWithHistories(): Promise<ProcessedCard[]> {
+  async getInitiativesWithHistories(filters?: Record<string, any>): Promise<ProcessedCard[]> {
     console.log('[GetInitiativesWithHistories] Iniciando busca de iniciativas com histórias...');
     
     try {
-      console.log('[GetInitiativesWithHistories] Buscando todos os cards do repositório...');
-      const allCards = await this.cardsRepository.getAllCards();
+      console.log('[GetInitiativesWithHistories] Buscando cards com filtros...');
+      console.log('[GetInitiativesWithHistories] Filtros aplicados:', filters);
+      const allCards = await this.cardsRepository.getAllCards(filters);
       console.log(`[GetInitiativesWithHistories] Total de cards obtidos: ${allCards.length}`);
       
       console.log('[GetInitiativesWithHistories] Filtrando cards relevantes (type_id 1 ou 2)...');
