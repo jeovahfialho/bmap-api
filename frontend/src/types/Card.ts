@@ -9,4 +9,9 @@ export interface ProcessedCard {
 export interface ApiResponse {
   success: boolean;
   data: ProcessedCard[];
+  pagination?: {
+    all_pages: number;
+    current_page: number;
+    results_per_page: number;
+  };
 }
