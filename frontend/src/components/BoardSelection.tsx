@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import parse from 'html-react-parser';
 
 interface Board {
   board_id: number;
   name: string;
+  description: string;
   is_archived: boolean;
 }
 
@@ -160,6 +162,46 @@ const BoardSelection: React.FC<BoardSelectionProps> = ({
             </div>
           </div>
         )}
+
+        <div className="boards-info">
+          <h3>📋 Boards Disponíveis</h3>
+          
+          {activeBoards.length > 0 && (
+            <div className="board-group">
+              <h4 className="board-group-title">📌 Boards Ativos ({activeBoards.length})</h4>
+              <div className="boards-display">
+                {activeBoards.map(board => (
+                  <div key={board.board_id} className="board-item">
+                    <div className="board-header">
+                      <strong>ID {board.board_id}: {board.name}</strong>
+                    </div>
+                    <div className="board-description">
+                      {board.description ? parse(board.description) : <em>Sem descrição</em>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {archivedBoards.length > 0 && (
+            <div className="board-group">
+              <h4 className="board-group-title">📦 Boards Arquivados ({archivedBoards.length})</h4>
+              <div className="boards-display">
+                {archivedBoards.map(board => (
+                  <div key={board.board_id} className="board-item archived">
+                    <div className="board-header">
+                      <strong>ID {board.board_id}: {board.name}</strong>
+                    </div>
+                    <div className="board-description">
+                      {board.description ? parse(board.description) : <em>Sem descrição</em>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

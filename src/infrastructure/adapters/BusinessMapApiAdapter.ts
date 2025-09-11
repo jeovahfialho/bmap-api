@@ -60,13 +60,14 @@ export class BusinessMapApiAdapter {
       try {
         console.log(`[BusinessMapApiAdapter] Tentativa ${attempt}/${maxRetries} para boards`);
         
-        const response = await axios.get<BoardsResponse>(
+        const response = await axios.get<any>(
           `http://${this.baseUrl}/api/v2/boards`
         );
 
-        console.log(`[BusinessMapApiAdapter] Boards obtidos com sucesso! Total: ${response.data.length}`);
+        const boardsData = response.data.data || response.data;
+        console.log(`[BusinessMapApiAdapter] Boards obtidos com sucesso! Total: ${boardsData.length}`);
         
-        const boards = response.data.map(board => ({
+        const boards = boardsData.map((board: any) => ({
           board_id: board.board_id,
           name: board.name,
           description: board.description,
