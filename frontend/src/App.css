@@ -160,7 +160,23 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 50vh;
-  gap: 1rem;
+  gap: 1.5rem;
+}
+
+.loading-text {
+  text-align: center;
+}
+
+.loading-text p {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+  color: #2d3748;
+}
+
+.loading-subtitle {
+  font-size: 0.95rem !important;
+  color: #718096 !important;
+  font-style: italic;
 }
 
 .loading-spinner {
@@ -196,6 +212,14 @@ body {
   color: #e53e3e;
   font-weight: 500;
   max-width: 500px;
+}
+
+.error-hint {
+  font-size: 0.9rem;
+  color: #718096;
+  margin-top: 1rem;
+  font-style: italic;
+  max-width: 400px;
 }
 
 .retry-button {

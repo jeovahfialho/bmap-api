@@ -33,9 +33,18 @@ export class GetInitiativesWithHistories implements CardsService {
   }
 
   private processInitiativeWithChildren(initiative: Card, allCards: Card[]): ProcessedCard {
-    const childrenIds = initiative.linked_cards
-      .filter(link => link.link_type === 'child')
+    console.log(`[GetInitiativesWithHistories] Processando iniciativa ${initiative.card_id}: "${initiative.title}"`);
+    console.log(`[GetInitiativesWithHistories] linked_cards:`, initiative.linked_cards);
+    
+    // Verifica se linked_cards existe e é um array
+    const linkedCards = initiative.linked_cards || [];
+    console.log(`[GetInitiativesWithHistories] linkedCards tratado:`, linkedCards);
+    
+    const childrenIds = linkedCards
+      .filter(link => link && link.link_type === 'child')
       .map(link => link.card_id);
+    
+    console.log(`[GetInitiativesWithHistories] IDs dos filhos encontrados:`, childrenIds);
 
     const children = childrenIds
       .map(childId => allCards.find(card => card.card_id === childId))
@@ -43,15 +52,17 @@ export class GetInitiativesWithHistories implements CardsService {
       .map(card => ({
         id: card!.card_id,
         title: card!.title,
-        description: card!.description,
+        description: card!.description || '',
         type: 'historia' as const,
         children: []
       }));
+    
+    console.log(`[GetInitiativesWithHistories] Filhos processados para iniciativa ${initiative.card_id}:`, children.length);
 
     return {
       id: initiative.card_id,
       title: initiative.title,
-      description: initiative.description,
+      description: initiative.description || '',
       type: 'iniciativa',
       children
     };

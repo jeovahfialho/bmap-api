@@ -6,9 +6,9 @@ export interface LinkedCard {
 export interface Card {
   card_id: number;
   title: string;
-  description: string;
+  description?: string;
   type_id: number;
-  linked_cards: LinkedCard[];
+  linked_cards?: LinkedCard[];
 }
 
 export interface ProcessedCard {

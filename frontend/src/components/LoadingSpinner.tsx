@@ -4,7 +4,10 @@ const LoadingSpinner: React.FC = () => {
   return (
     <div className="loading-container">
       <div className="loading-spinner"></div>
-      <p>Carregando iniciativas...</p>
+      <div className="loading-text">
+        <p><strong>Buscando dados das iniciativas...</strong></p>
+        <p className="loading-subtitle">Isso pode demorar um pouco, aguarde.</p>
+      </div>
     </div>
   );
 };
