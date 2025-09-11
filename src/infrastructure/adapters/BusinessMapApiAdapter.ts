@@ -49,9 +49,9 @@ export class BusinessMapApiAdapter {
         const mappedCards = rawCards.map(card => ({
           card_id: card.card_id,
           title: card.title,
-          description: card.description,
+          description: card.description || undefined,
           type_id: card.type_id,
-          linked_cards: card.linked_cards
+          linked_cards: card.linked_cards || []
         }));
         
         console.log(`[BusinessMapApiAdapter] Cards mapeados: ${mappedCards.length}`);
