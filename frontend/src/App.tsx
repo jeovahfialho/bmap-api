@@ -10,6 +10,7 @@ import './App.css';
 interface Board {
   board_id: number;
   name: string;
+  description: string;
   is_archived: boolean;
 }
 

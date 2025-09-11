@@ -43,6 +43,7 @@ export interface BoardsResponse {
 export interface Board {
   board_id: number;
   name: string;
+  description: string;
   is_archived: boolean;
 }
 
@@ -63,11 +64,12 @@ export class BusinessMapApiAdapter {
           `http://${this.baseUrl}/api/v2/boards`
         );
 
-        console.log(`[BusinessMapApiAdapter] Boards obtidos com sucesso! Total: ${response.data.data.length}`);
+        console.log(`[BusinessMapApiAdapter] Boards obtidos com sucesso! Total: ${response.data.length}`);
         
-        const boards = response.data.data.map(board => ({
+        const boards = response.data.map(board => ({
           board_id: board.board_id,
           name: board.name,
+          description: board.description,
           is_archived: board.is_archived === 1
         }));
         
