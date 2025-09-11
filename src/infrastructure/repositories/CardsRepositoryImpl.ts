@@ -6,6 +6,15 @@ export class CardsRepositoryImpl implements CardsRepository {
   constructor(private apiAdapter: BusinessMapApiAdapter) {}
 
   async getAllCards(): Promise<Card[]> {
-    return await this.apiAdapter.fetchCards();
+    console.log('[CardsRepositoryImpl] Iniciando busca de todos os cards...');
+    
+    try {
+      const cards = await this.apiAdapter.fetchCards();
+      console.log(`[CardsRepositoryImpl] Cards obtidos com sucesso: ${cards.length}`);
+      return cards;
+    } catch (error) {
+      console.error('[CardsRepositoryImpl] Erro ao buscar cards:', error);
+      throw error;
+    }
   }
 }
