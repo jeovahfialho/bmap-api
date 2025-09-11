@@ -27,7 +27,7 @@ const App: React.FC = () => {
     setBoardsLoading(true);
     
     try {
-      const response = await fetch('/api/boards');
+      const response = await fetch('/api/cards/boards');
       const result = await response.json();
       
       if (result.success) {

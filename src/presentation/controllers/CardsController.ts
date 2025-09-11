@@ -44,7 +44,7 @@ export class CardsController {
   }
 
   async getBoards(req: Request, res: Response): Promise<void> {
-    console.log('[CardsController] Buscando boards disponíveis...');
+    console.log('[CardsController] ===== ROTA /api/boards CHAMADA =====');
     
     try {
       // Como o service não tem getBoards, vou acessar diretamente o repositório
