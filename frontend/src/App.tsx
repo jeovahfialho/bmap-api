@@ -22,18 +22,24 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchBoards = async () => {
+    console.log('[App] Iniciando busca de boards...');
     setBoardsLoading(true);
+    
     try {
       const response = await fetch('/api/boards');
       const result = await response.json();
+      
       if (result.success) {
+        console.log(`[App] ${result.data.length} boards carregados`);
         setBoards(result.data);
       } else {
         throw new Error('Erro ao buscar boards');
       }
     } catch (err) {
+      console.error('[App] Erro ao buscar boards:', err);
       setError(err instanceof Error ? err.message : 'Erro ao carregar boards');
     } finally {
+      console.log('[App] Finalizando busca de boards');
       setBoardsLoading(false);
     }
   };
@@ -56,6 +62,7 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
+    console.log('[App] useEffect executado - iniciando busca de boards...');
     fetchBoards();
   }, []);
 

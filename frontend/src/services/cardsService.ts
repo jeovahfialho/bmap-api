@@ -5,6 +5,8 @@ const API_BASE_URL = '/api/cards';
 
 export const cardsService = {
   async getInitiatives(filters?: Record<string, any>): Promise<ApiResponse> {
+    console.log('[cardsService] Iniciando busca de iniciativas com filtros:', filters);
+    
     try {
       const params = new URLSearchParams();
       
@@ -22,8 +24,11 @@ export const cardsService = {
       const url = `${API_BASE_URL}/initiatives${queryString ? `?${queryString}` : ''}`;
       
       const response = await axios.get<ApiResponse>(url);
+      console.log(`[cardsService] ${response.data.data?.length || 0} iniciativas obtidas`);
+      
       return response.data;
     } catch (error) {
+      console.error('[cardsService] Erro ao buscar iniciativas:', error);
       throw new Error(`Erro ao buscar iniciativas: ${error}`);
     }
   }

@@ -139,12 +139,9 @@ export class BusinessMapApiAdapter {
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`[BusinessMapApiAdapter] Tentativa ${attempt}/${maxRetries}`);
-        
         const response = await axios.get<BusinessMapApiResponse>(fullUrl);
 
-        console.log(`[BusinessMapApiAdapter] Sucesso na tentativa ${attempt}! Status: ${response.status}`);
-        console.log(`[BusinessMapApiAdapter] Estrutura da resposta:`, Object.keys(response.data));
+        console.log(`[BusinessMapApiAdapter] Sucesso! ${response.data.data.data.length} cards obtidos`);
         
         if (!response.data?.data?.data) {
           console.error('[BusinessMapApiAdapter] Estrutura de resposta inesperada:', response.data);
@@ -152,7 +149,6 @@ export class BusinessMapApiAdapter {
         }
 
         const rawCards = response.data.data.data;
-        console.log(`[BusinessMapApiAdapter] Cards raw recebidos: ${rawCards.length}`);
         
         const mappedCards = rawCards.map(card => ({
           card_id: card.card_id,
@@ -162,35 +158,28 @@ export class BusinessMapApiAdapter {
           linked_cards: card.linked_cards || []
         }));
         
-        console.log(`[BusinessMapApiAdapter] Cards mapeados: ${mappedCards.length}`);
-        console.log('[BusinessMapApiAdapter] Primeiros cards:', mappedCards.slice(0, 2));
-        
         return mappedCards;
         
       } catch (error) {
-        console.error(`[BusinessMapApiAdapter] Erro na tentativa ${attempt}:`, error);
         
         if (axios.isAxiosError(error)) {
           const status = error.response?.status;
-          const errorData = error.response?.data;
-          
-          console.error('[BusinessMapApiAdapter] Detalhes do erro HTTP:');
-          console.error('- Status:', status);
-          console.error('- Status Text:', error.response?.statusText);
-          console.error('- Data:', errorData);
           
           // Se é erro 429 (Too Many Requests), tenta novamente
           if (status === 429) {
             if (attempt < maxRetries) {
-              const delay = baseDelay * Math.pow(1.5, attempt - 1); // Backoff exponencial
-              console.log(`[BusinessMapApiAdapter] Rate limit atingido. Aguardando ${delay}ms antes da próxima tentativa...`);
+              const delay = baseDelay * Math.pow(1.5, attempt - 1);
+              console.log(`[BusinessMapApiAdapter] Rate limit - aguardando ${delay}ms...`);
               await this.sleep(delay);
               continue;
             } else {
-              console.error('[BusinessMapApiAdapter] Número máximo de tentativas atingido devido ao rate limit');
+              console.error('[BusinessMapApiAdapter] Máximo de tentativas atingido');
               throw new Error('A API externa está temporariamente indisponível devido ao limite de requisições. Tente novamente em alguns minutos.');
             }
           }
+          
+          // Para outros erros HTTP, mostra detalhes
+          console.error('[BusinessMapApiAdapter] Erro HTTP:', status, error.response?.statusText);
           
           // Para outros erros HTTP, não tenta novamente
           throw new Error(`Erro HTTP ${status}: ${error.response?.statusText || 'Erro desconhecido'}`);

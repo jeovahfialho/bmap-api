@@ -21,15 +21,19 @@ const BoardSelection: React.FC<BoardSelectionProps> = ({
   onSearch, 
   loading 
 }) => {
+  console.log(`[BoardSelection] ${boards.length} boards disponíveis`);
+  
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(200);
 
   const handleBoardChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const boardId = parseInt(e.target.value);
+    
     if (boardId === 0) {
       onBoardSelect(null);
     } else {
       const board = boards.find(b => b.board_id === boardId);
+      console.log(`[BoardSelection] Selecionado: ${board?.name}`);
       onBoardSelect(board || null);
     }
   };
@@ -45,7 +49,8 @@ const BoardSelection: React.FC<BoardSelectionProps> = ({
       page,
       per_page: perPage
     };
-
+    
+    console.log(`[BoardSelection] Buscando cards: ${selectedBoard.name}, página ${page}, ${perPage} por página`);
     onSearch(filters);
   };
 
