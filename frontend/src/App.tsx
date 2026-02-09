@@ -3,6 +3,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import ErrorMessage from './components/ErrorMessage';
 import BoardSelection from './components/BoardSelection';
 import ResultsPage from './components/ResultsPage';
+import AIChat from './components/AIChat';
 import { ProcessedCard } from './types/Card';
 import { cardsService } from './services/cardsService';
 import './App.css';
@@ -16,7 +17,7 @@ interface Board {
 
 const App: React.FC = () => {
   const [boards, setBoards] = useState<Board[]>([]);
-  const [selectedBoard, setSelectedBoard] = useState<Board | null>(null);
+  const [selectedBoards, setSelectedBoards] = useState<Board[]>([]);
   const [cards, setCards] = useState<ProcessedCard[]>([]);
   const [loading, setLoading] = useState(false);
   const [boardsLoading, setBoardsLoading] = useState(true);
@@ -30,7 +31,18 @@ const App: React.FC = () => {
     
     try {
       const response = await fetch('/api/cards/boards');
-      const result = await response.json();
+      
+      // Verifica se a resposta é ok
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      // Pega o texto primeiro para debugar
+      const text = await response.text();
+      console.log('[App] Resposta raw (primeiros 200 chars):', text.substring(0, 200));
+      
+      // Tenta fazer parse
+      const result = JSON.parse(text);
       
       if (result.success) {
         console.log(`[App] ${result.data.length} boards carregados`);
@@ -82,7 +94,7 @@ const App: React.FC = () => {
   }, []);
 
   // Se estiver mostrando resultados
-  if (showResults && selectedBoard) {
+  if (showResults && selectedBoards.length > 0) {
     if (loading) {
       return <LoadingSpinner />;
     }
@@ -94,7 +106,7 @@ const App: React.FC = () => {
     return (
       <ResultsPage
         cards={cards}
-        selectedBoard={selectedBoard}
+        selectedBoards={selectedBoards}
         pagination={pagination}
         onBackToSearch={handleBackToSearch}
       />
@@ -117,8 +129,8 @@ const App: React.FC = () => {
         ) : (
           <BoardSelection 
             boards={boards}
-            selectedBoard={selectedBoard}
-            onBoardSelect={setSelectedBoard}
+            selectedBoards={selectedBoards}
+            onBoardSelect={setSelectedBoards}
             onSearch={fetchCards}
             loading={loading}
           />
@@ -126,6 +138,9 @@ const App: React.FC = () => {
 
         {loading && <LoadingSpinner />}
       </main>
+
+      {/* Assistente IA */}
+      <AIChat />
     </div>
   );
 };

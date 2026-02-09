@@ -20,16 +20,7 @@ export class CardsRepositoryImpl implements CardsRepository {
   }
 
   async getCardDetails(cardId: number): Promise<Card> {
-    console.log(`[CardsRepositoryImpl] Buscando detalhes do card ${cardId}...`);
-    
-    try {
-      const cardDetails = await this.apiAdapter.fetchCardDetails(cardId);
-      console.log(`[CardsRepositoryImpl] Detalhes do card ${cardId} obtidos com sucesso`);
-      return cardDetails;
-    } catch (error) {
-      console.error(`[CardsRepositoryImpl] Erro ao buscar detalhes do card ${cardId}:`, error);
-      throw error;
-    }
+    throw new Error('getCardDetails foi deprecado. Use getAllCards com filtros apropriados.');
   }
 
   async getBoards(): Promise<any[]> {

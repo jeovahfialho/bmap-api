@@ -17,21 +17,13 @@ export class GetInitiativesWithHistories implements CardsService {
       console.log(`[GetInitiativesWithHistories] Total de cards obtidos: ${allCards.length}`);
       console.log(`[GetInitiativesWithHistories] Paginação:`, pagination);
       
-      console.log('[GetInitiativesWithHistories] Filtrando cards relevantes (type_id 1 ou 2)...');
-      const relevantCards = allCards.filter(card => card.type_id === 1 || card.type_id === 2);
-      console.log(`[GetInitiativesWithHistories] Cards relevantes encontrados: ${relevantCards.length}`);
-      
       console.log('[GetInitiativesWithHistories] Filtrando apenas iniciativas (type_id 2)...');
-      const initiatives = relevantCards.filter(card => card.type_id === 2);
+      const initiatives = allCards.filter(card => card.type_id === 2);
       console.log(`[GetInitiativesWithHistories] Iniciativas encontradas: ${initiatives.length}`);
-      
-      console.log('[GetInitiativesWithHistories] Buscando detalhes das iniciativas...');
-      const initiativesWithDetails = await this.fetchCardDetails(initiatives);
-      console.log(`[GetInitiativesWithHistories] Detalhes das iniciativas obtidos: ${initiativesWithDetails.length}`);
       
       console.log('[GetInitiativesWithHistories] Processando iniciativas com filhos...');
       const processedInitiatives = await Promise.all(
-        initiativesWithDetails.map(initiative => this.processInitiativeWithChildren(initiative, relevantCards))
+        initiatives.map(initiative => this.processInitiativeWithChildren(initiative, allCards))
       );
       console.log(`[GetInitiativesWithHistories] Iniciativas processadas: ${processedInitiatives.length}`);
       
@@ -40,29 +32,6 @@ export class GetInitiativesWithHistories implements CardsService {
       console.error('[GetInitiativesWithHistories] Erro durante o processamento:', error);
       throw error;
     }
-  }
-
-  private async fetchCardDetails(cards: Card[]): Promise<Card[]> {
-    console.log(`[GetInitiativesWithHistories] Buscando detalhes de ${cards.length} cards...`);
-    
-    const detailedCards = [];
-    
-    for (const card of cards) {
-      try {
-        console.log(`[GetInitiativesWithHistories] Buscando detalhes do card ${card.card_id}...`);
-        const detailedCard = await this.cardsRepository.getCardDetails(card.card_id);
-        detailedCards.push(detailedCard);
-        
-        // Pequena pausa para evitar sobrecarga da API
-        await new Promise(resolve => setTimeout(resolve, 100));
-      } catch (error) {
-        console.error(`[GetInitiativesWithHistories] Erro ao buscar detalhes do card ${card.card_id}:`, error);
-        // Se falhar, usa o card original sem descrição detalhada
-        detailedCards.push(card);
-      }
-    }
-    
-    return detailedCards;
   }
 
   private async processInitiativeWithChildren(initiative: Card, allCards: Card[]): Promise<ProcessedCard> {
@@ -84,31 +53,15 @@ export class GetInitiativesWithHistories implements CardsService {
     console.log(`[GetInitiativesWithHistories] Encontrados ${childrenCards.length} cards filhos na lista total`);
     console.log(`[GetInitiativesWithHistories] Cards filhos:`, childrenCards.map(c => `${c.card_id} (type: ${c.type_id})`));
     
-    const children = [];
-    for (const card of childrenCards) {
-      try {
-        const detailedCard = await this.cardsRepository.getCardDetails(card.card_id);
-        children.push({
-          id: detailedCard.card_id,
-          title: detailedCard.title,
-          description: detailedCard.description || '',
-          type: 'historia' as const,
-          children: []
-        });
-        
-        // Pequena pausa para evitar rate limit
-        await new Promise(resolve => setTimeout(resolve, 100));
-      } catch (error) {
-        console.error(`[GetInitiativesWithHistories] Erro ao buscar detalhes da história ${card.card_id}:`, error);
-        children.push({
-          id: card.card_id,
-          title: card.title,
-          description: card.description || '',
-          type: 'historia' as const,
-          children: []
-        });
-      }
-    }
+    const children = childrenCards.map(card => ({
+      id: card.card_id,
+      title: card.title,
+      description: card.description || '',
+      type: 'historia' as const,
+      board_id: card.board_id,
+      first_start_time: card.first_start_time,
+      children: []
+    }));
     
     console.log(`[GetInitiativesWithHistories] Filhos processados para iniciativa ${initiative.card_id}:`, children.length);
 
@@ -117,6 +70,8 @@ export class GetInitiativesWithHistories implements CardsService {
       title: initiative.title,
       description: initiative.description || '',
       type: 'iniciativa',
+      board_id: initiative.board_id,
+      first_start_time: initiative.first_start_time,
       children
     };
   }

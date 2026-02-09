@@ -3,6 +3,8 @@ export interface ProcessedCard {
   title: string;
   description: string;
   type: 'iniciativa' | 'historia';
+  board_id?: number;
+  first_start_time?: string;
   children: ProcessedCard[];
 }
 

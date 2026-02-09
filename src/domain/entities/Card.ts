@@ -8,6 +8,8 @@ export interface Card {
   title: string;
   description?: string;
   type_id: number;
+  board_id?: number;
+  first_start_time?: string;
   linked_cards?: LinkedCard[];
 }
 
@@ -16,5 +18,7 @@ export interface ProcessedCard {
   title: string;
   description: string;
   type: 'iniciativa' | 'historia';
+  board_id?: number;
+  first_start_time?: string;
   children: ProcessedCard[];
 }

@@ -99,7 +99,7 @@ const FiltersPanel: React.FC<FiltersPanelProps> = ({ onApplyFilters, loading }) 
 
             {activeBoards.length > 0 && (
               <div className="board-group">
-                <h4 className="board-group-title">Boards Ativos</h4>
+                <h4 className="board-group-title">Ativos</h4>
                 <div className="board-list">
                   {activeBoards.map(board => (
                     <label key={board.board_id} className="board-checkbox">
@@ -117,7 +117,7 @@ const FiltersPanel: React.FC<FiltersPanelProps> = ({ onApplyFilters, loading }) 
 
             {archivedBoards.length > 0 && (
               <div className="board-group">
-                <h4 className="board-group-title">Boards Arquivados</h4>
+                <h4 className="board-group-title">Arquivados</h4>
                 <div className="board-list">
                   {archivedBoards.map(board => (
                     <label key={board.board_id} className="board-checkbox archived">
@@ -148,7 +148,7 @@ const FiltersPanel: React.FC<FiltersPanelProps> = ({ onApplyFilters, loading }) 
       </div>
 
       <div className="filter-section">
-        <label className="filter-label">Cards por Página</label>
+        <label className="filter-label">Por Página</label>
         <select
           value={perPage}
           onChange={(e) => setPerPage(parseInt(e.target.value))}
@@ -168,12 +168,12 @@ const FiltersPanel: React.FC<FiltersPanelProps> = ({ onApplyFilters, loading }) 
           onClick={handleApplyFilters}
           disabled={loading}
         >
-          {loading ? 'Carregando...' : 'Aplicar Filtros'}
+          {loading ? 'Carregando...' : 'Aplicar'}
         </button>
       </div>
 
       <div className="filter-info">
-        <p><strong>Selecionados:</strong> {selectedBoardIds.length} boards</p>
+        <p><strong>Selecionados:</strong> {selectedBoardIds.length}</p>
         <p><strong>Página:</strong> {page}</p>
         <p><strong>Por página:</strong> {perPage}</p>
       </div>
