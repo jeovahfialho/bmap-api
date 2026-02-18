@@ -11,9 +11,14 @@ class CardsController {
             // Extrai filtros dos query parameters
             const filters = {};
             if (req.query.board_ids) {
-                filters.board_ids = Array.isArray(req.query.board_ids)
-                    ? req.query.board_ids
-                    : [req.query.board_ids];
+                // board_ids pode vir como "804,351,352" (string com vírgulas) ou como array
+                const raw = req.query.board_ids;
+                if (typeof raw === 'string') {
+                    filters.board_ids = raw.split(',').map(id => id.trim());
+                }
+                else if (Array.isArray(raw)) {
+                    filters.board_ids = raw.map(id => String(id).trim());
+                }
             }
             if (req.query.page)
                 filters.page = req.query.page;

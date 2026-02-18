@@ -1,4 +1,4 @@
-import { Card } from '../../domain/entities/Card';
+import { Card, LoggedTimeEntry } from '../../domain/entities/Card';
 export interface BusinessMapApiResponse {
     data: {
         pagination: {
@@ -11,12 +11,24 @@ export interface BusinessMapApiResponse {
             title: string;
             description?: string;
             type_id: number;
+            board_id?: number;
+            first_start_time?: string;
+            owner_user_id?: number;
             linked_cards?: Array<{
                 card_id: number;
                 link_type: 'child' | 'parent';
             }>;
+            logged_times?: LoggedTimeEntry[];
+            co_owner_ids?: number[];
+            current_logged_time?: number;
         }>;
     };
+}
+export interface UserResponse {
+    user_id: number;
+    username: string;
+    realname: string;
+    email?: string;
 }
 export interface CardDetailResponse {
     data: {
@@ -57,6 +69,7 @@ export declare class BusinessMapApiAdapter {
             results_per_page: number;
         };
     }>;
+    fetchUsers(): Promise<UserResponse[]>;
     private sleep;
 }
 //# sourceMappingURL=BusinessMapApiAdapter.d.ts.map

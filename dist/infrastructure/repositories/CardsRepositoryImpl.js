@@ -33,6 +33,18 @@ class CardsRepositoryImpl {
             throw error;
         }
     }
+    async getUsers() {
+        console.log('[CardsRepositoryImpl] Buscando usuários...');
+        try {
+            const users = await this.apiAdapter.fetchUsers();
+            console.log(`[CardsRepositoryImpl] Usuários obtidos com sucesso: ${users.length}`);
+            return users;
+        }
+        catch (error) {
+            console.error('[CardsRepositoryImpl] Erro ao buscar usuários:', error);
+            return [];
+        }
+    }
 }
 exports.CardsRepositoryImpl = CardsRepositoryImpl;
 //# sourceMappingURL=CardsRepositoryImpl.js.map

@@ -1,0 +1,93 @@
+/* ============================================
+   BB Design System (BBDS) - Design Tokens
+   Baseado no BB Design System oficial
+   https://dls.bb.com.br/
+   ============================================ */
+
+:root {
+  /* ── Brand Colors ── */
+  --bbds-brand-primary: #003882;
+  --bbds-brand-primary-dark: #002D6B;
+  --bbds-brand-primary-light: #1A5DAD;
+  --bbds-brand-secondary: #FCFC30;
+  --bbds-brand-secondary-dark: #E6E600;
+
+  /* ── Neutral Palette ── */
+  --bbds-neutral-100: #FFFFFF;
+  --bbds-neutral-200: #F7F7F7;
+  --bbds-neutral-300: #EDEDED;
+  --bbds-neutral-400: #DEDEDE;
+  --bbds-neutral-500: #CCCCCC;
+  --bbds-neutral-600: #999999;
+  --bbds-neutral-700: #666666;
+  --bbds-neutral-800: #333333;
+  --bbds-neutral-900: #000000;
+
+  /* ── Feedback Colors ── */
+  --bbds-success: #2E7D32;
+  --bbds-success-light: #E8F5E9;
+  --bbds-success-dark: #1B5E20;
+  --bbds-error: #C62828;
+  --bbds-error-light: #FFEBEE;
+  --bbds-error-dark: #B71C1C;
+  --bbds-warning: #FF8F00;
+  --bbds-warning-light: #FFF8E1;
+  --bbds-warning-dark: #E65100;
+  --bbds-info: #1565C0;
+  --bbds-info-light: #E3F2FD;
+  --bbds-info-dark: #0D47A1;
+
+  /* ── Surface Colors ── */
+  --bbds-surface-default: #FFFFFF;
+  --bbds-surface-highlight: #F7F7F7;
+  --bbds-surface-highlight-soft: #FAFAFA;
+  --bbds-surface-overlay: rgba(0, 0, 0, 0.5);
+
+  /* ── Typography ── */
+  --bbds-font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  --bbds-font-size-xs: 0.75rem;    /* 12px */
+  --bbds-font-size-sm: 0.875rem;   /* 14px */
+  --bbds-font-size-md: 1rem;       /* 16px */
+  --bbds-font-size-lg: 1.25rem;    /* 20px */
+  --bbds-font-size-xl: 1.5rem;     /* 24px */
+  --bbds-font-size-2xl: 2rem;      /* 32px */
+  --bbds-font-weight-regular: 400;
+  --bbds-font-weight-medium: 500;
+  --bbds-font-weight-semibold: 600;
+  --bbds-font-weight-bold: 700;
+  --bbds-line-height-tight: 1.2;
+  --bbds-line-height-normal: 1.5;
+  --bbds-line-height-relaxed: 1.75;
+
+  /* ── Spacing ── */
+  --bbds-spacing-2xs: 4px;
+  --bbds-spacing-xs: 8px;
+  --bbds-spacing-sm: 12px;
+  --bbds-spacing-md: 16px;
+  --bbds-spacing-lg: 24px;
+  --bbds-spacing-xl: 32px;
+  --bbds-spacing-2xl: 48px;
+  --bbds-spacing-3xl: 64px;
+
+  /* ── Border Radius ── */
+  --bbds-radius-sm: 4px;
+  --bbds-radius-md: 8px;
+  --bbds-radius-lg: 16px;
+  --bbds-radius-full: 9999px;
+
+  /* ── Shadows ── */
+  --bbds-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --bbds-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --bbds-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --bbds-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
+
+  /* ── Transitions ── */
+  --bbds-transition-fast: 150ms ease;
+  --bbds-transition-normal: 250ms ease;
+  --bbds-transition-slow: 350ms ease;
+
+  /* ── Layout ── */
+  --bbds-max-width: 1280px;
+  --bbds-sidebar-width: 280px;
+  --bbds-navbar-height: 64px;
+}

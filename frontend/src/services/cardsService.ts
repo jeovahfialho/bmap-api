@@ -28,9 +28,20 @@ export const cardsService = {
       console.log(`[cardsService] ${response.data.data?.length || 0} iniciativas obtidas`);
       
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('[cardsService] Erro ao buscar iniciativas:', error);
-      throw new Error(`Erro ao buscar iniciativas: ${error}`);
+      
+      if (error?.response?.status === 500) {
+        throw new Error('O servidor não conseguiu buscar as iniciativas. A API externa pode estar indisponível ou lenta. Tente novamente.');
+      }
+      if (error?.response?.status === 429) {
+        throw new Error('Limite de requisições atingido na API externa. Aguarde alguns segundos e tente novamente.');
+      }
+      if (error?.code === 'ECONNABORTED') {
+        throw new Error('A busca demorou demais e foi cancelada. Tente novamente ou selecione menos boards.');
+      }
+      
+      throw new Error(`Erro ao buscar iniciativas: ${error?.message || error}`);
     }
   }
 };

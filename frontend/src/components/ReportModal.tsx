@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import DOMPurify from 'dompurify';
 import { sendReportMessage, resetReportConversation } from '../services/aiService';
 import { stripHtml } from '../utils/textUtils';
 
@@ -15,7 +16,6 @@ interface Message {
 }
 
 // Função para limpar HTML, markdown e aplicar negrito real em perguntas/títulos
-import DOMPurify from 'dompurify';
 const formatMessage = (text: string): JSX.Element => {
   // Remove tags HTML e converte para texto puro
   let clean = stripHtml(text);

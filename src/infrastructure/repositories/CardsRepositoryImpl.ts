@@ -1,6 +1,6 @@
 import { CardsRepository } from '../../domain/interfaces/CardsRepository';
 import { Card } from '../../domain/entities/Card';
-import { BusinessMapApiAdapter } from '../adapters/BusinessMapApiAdapter';
+import { BusinessMapApiAdapter, UserResponse } from '../adapters/BusinessMapApiAdapter';
 
 export class CardsRepositoryImpl implements CardsRepository {
   constructor(private apiAdapter: BusinessMapApiAdapter) {}
@@ -33,6 +33,19 @@ export class CardsRepositoryImpl implements CardsRepository {
     } catch (error) {
       console.error('[CardsRepositoryImpl] Erro ao buscar boards:', error);
       throw error;
+    }
+  }
+
+  async getUsers(): Promise<UserResponse[]> {
+    console.log('[CardsRepositoryImpl] Buscando usuários...');
+    
+    try {
+      const users = await this.apiAdapter.fetchUsers();
+      console.log(`[CardsRepositoryImpl] Usuários obtidos com sucesso: ${users.length}`);
+      return users;
+    } catch (error) {
+      console.error('[CardsRepositoryImpl] Erro ao buscar usuários:', error);
+      return [];
     }
   }
 }

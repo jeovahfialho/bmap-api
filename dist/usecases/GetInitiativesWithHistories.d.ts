@@ -12,6 +12,7 @@ export declare class GetInitiativesWithHistories implements CardsService {
             results_per_page: number;
         };
     }>;
+    private aggregateLoggedTimesByUser;
     private processInitiativeWithChildren;
 }
 //# sourceMappingURL=GetInitiativesWithHistories.d.ts.map

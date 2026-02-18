@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Card } from '../../domain/entities/Card';
+import { Card, LoggedTimeEntry } from '../../domain/entities/Card';
 
 export interface BusinessMapApiResponse {
   data: {
@@ -15,12 +15,23 @@ export interface BusinessMapApiResponse {
       type_id: number;
       board_id?: number;
       first_start_time?: string;
+      owner_user_id?: number;
       linked_cards?: Array<{
         card_id: number;
         link_type: 'child' | 'parent';
       }>;
+      logged_times?: LoggedTimeEntry[];
+      co_owner_ids?: number[];
+      current_logged_time?: number;
     }>;
   };
+}
+
+export interface UserResponse {
+  user_id: number;
+  username: string;
+  realname: string;
+  email?: string;
 }
 
 export interface CardDetailResponse {
@@ -68,7 +79,8 @@ export class BusinessMapApiAdapter {
         console.log(`[BusinessMapApiAdapter] Tentativa ${attempt}/${maxRetries} para boards`);
         
         const response = await axios.get<any>(
-          `http://${this.baseUrl}/api/v2/boards`
+          `http://${this.baseUrl}/api/v2/boards`,
+          { timeout: 15000 } // 15 segundos
         );
 
         const boardsData = response.data.data || response.data;
@@ -112,20 +124,18 @@ export class BusinessMapApiAdapter {
     const maxRetries = 15;
     const baseDelay = 1000; // 1 segundo
     
-    // Constrói a URL exatamente como a API espera
-    let urlParams = new URLSearchParams();
-    
-    // Ordem correta: type_ids, board_ids, fields
-    urlParams.append('type_ids', '2');
+    // Constrói a query string manualmente (URLSearchParams codifica vírgulas como %2C)
+    const parts: string[] = [];
+    parts.push('type_ids=2');
     
     if (queryParams?.board_ids && Array.isArray(queryParams.board_ids)) {
-      urlParams.append('board_ids', queryParams.board_ids.join(','));
+      parts.push(`board_ids=${queryParams.board_ids.join(',')}`);
     }
     
-    // Usa espaços após vírgulas conforme API espera
-    urlParams.append('fields', 'first_start_time, card_id, title, description, owner_user_id, type_id, board_id');
+    parts.push('fields=first_start_time,card_id,title,description,owner_user_id,type_id,board_id,current_logged_time');
+    parts.push('expand=logged_times,co_owner_ids');
     
-    const queryString = urlParams.toString();
+    const queryString = parts.join('&');
     const fullUrl = `http://${this.baseUrl}/api/v2/cards?${queryString}`;
     
     console.log('[BusinessMapApiAdapter] Iniciando requisição para a API externa...');
@@ -134,7 +144,9 @@ export class BusinessMapApiAdapter {
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const response = await axios.get<BusinessMapApiResponse>(fullUrl);
+        const response = await axios.get<BusinessMapApiResponse>(fullUrl, {
+          timeout: 30000 // 30 segundos por tentativa
+        });
 
         console.log(`[BusinessMapApiAdapter] Sucesso! ${response.data.data.data.length} cards obtidos`);
         console.log(`[BusinessMapApiAdapter] Paginação:`, response.data.data.pagination);
@@ -154,7 +166,11 @@ export class BusinessMapApiAdapter {
           type_id: card.type_id,
           board_id: card.board_id,
           first_start_time: card.first_start_time,
-          linked_cards: card.linked_cards || []
+          owner_user_id: card.owner_user_id,
+          linked_cards: card.linked_cards || [],
+          logged_times: card.logged_times || [],
+          co_owner_ids: card.co_owner_ids || [],
+          current_logged_time: card.current_logged_time || 0
         }));
         
         return { cards: mappedCards, pagination };
@@ -197,6 +213,58 @@ export class BusinessMapApiAdapter {
     }
     
     throw new Error(`Erro inesperado: todas as ${maxRetries} tentativas foram esgotadas`);
+  }
+
+  async fetchUsers(): Promise<UserResponse[]> {
+    const maxRetries = 5;
+    const baseDelay = 500;
+    
+    console.log('[BusinessMapApiAdapter] Buscando usuários...');
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`[BusinessMapApiAdapter] Tentativa ${attempt}/${maxRetries} para usuários`);
+        
+        const response = await axios.get<any>(
+          `http://${this.baseUrl}/api/v2/users`,
+          { timeout: 15000 }
+        );
+
+        const usersData = response.data.data || response.data;
+        const users = Array.isArray(usersData) ? usersData : (usersData.data || []);
+        console.log(`[BusinessMapApiAdapter] Usuários obtidos com sucesso! Total: ${users.length}`);
+        
+        return users.map((user: any) => ({
+          user_id: user.user_id,
+          username: user.username || '',
+          realname: user.realname || user.username || `User ${user.user_id}`,
+          email: user.email
+        }));
+        
+      } catch (error) {
+        console.error(`[BusinessMapApiAdapter] Erro na tentativa ${attempt} para usuários:`, error);
+        
+        if (axios.isAxiosError(error) && error.response?.status === 429) {
+          if (attempt < maxRetries) {
+            const delay = baseDelay * Math.pow(1.5, attempt - 1);
+            console.log(`[BusinessMapApiAdapter] Rate limit para usuários. Aguardando ${delay}ms...`);
+            await this.sleep(delay);
+            continue;
+          }
+        }
+        
+        if (attempt < maxRetries) {
+          const delay = baseDelay * attempt;
+          await this.sleep(delay);
+          continue;
+        }
+        
+        console.warn('[BusinessMapApiAdapter] Não foi possível buscar usuários, retornando lista vazia');
+        return [];
+      }
+    }
+    
+    return [];
   }
 
   private sleep(ms: number): Promise<void> {

@@ -1,5 +1,5 @@
 import { Card } from '../entities/Card';
-import { Board } from '../../infrastructure/adapters/BusinessMapApiAdapter';
+import { Board, UserResponse } from '../../infrastructure/adapters/BusinessMapApiAdapter';
 export interface CardsRepository {
     getAllCards(queryParams?: Record<string, any>): Promise<{
         cards: Card[];
@@ -11,5 +11,6 @@ export interface CardsRepository {
     }>;
     getCardDetails(cardId: number): Promise<Card>;
     getBoards(): Promise<Board[]>;
+    getUsers(): Promise<UserResponse[]>;
 }
 //# sourceMappingURL=CardsRepository.d.ts.map

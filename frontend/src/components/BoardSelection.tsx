@@ -74,25 +74,27 @@ const BoardSelection: React.FC<BoardSelectionProps> = ({
 
   return (
     <div className="board-selection-v2">
-      <div className="board-selection-header">
-        <h2> Selecione os Boards</h2>
-        <p>Busque e selecione os boards para visualizar suas iniciativas</p>
+      {/* bb-section-title */}
+      <div className="bbds-section-title">
+        <h2>Selecione os Boards</h2>
+        <p>Busque e selecione até 3 boards para visualizar suas iniciativas</p>
       </div>
 
+      {/* bb-selectable-card chips */}
       {selectedBoards.length > 0 && (
-        <div className="selected-boards-section">
-          <label className="section-label">
-            Boards Selecionados ({selectedBoards.length})
+        <div style={{ marginBottom: 'var(--bbds-spacing-lg, 24px)' }}>
+          <label className="bbds-field-label">
+            Boards Selecionados ({selectedBoards.length}/3)
           </label>
-          <div className="boards-chips">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
             {selectedBoards.map((board) => (
-              <div key={board.board_id} className="board-chip">
-                <span className="chip-content">
-                  <span className="chip-id">{board.board_id}</span>
-                  <span className="chip-name">{board.name}</span>
+              <div key={board.board_id} className="bbds-selectable-chip bbds-selectable-chip--selected">
+                <span style={{ fontWeight: 600, fontSize: '11px', opacity: 0.8 }}>
+                  {board.board_id}
                 </span>
+                <span>{board.name}</span>
                 <button
-                  className="chip-remove"
+                  className="bbds-chip-remove"
                   onClick={() => handleRemoveBoard(board.board_id)}
                   title="Remover"
                 >
@@ -104,81 +106,112 @@ const BoardSelection: React.FC<BoardSelectionProps> = ({
         </div>
       )}
 
-      <div className="search-section-v2">
-        <label htmlFor="board-search" className="section-label">
+      {/* bb-search-field */}
+      <div className="bbds-field">
+        <label htmlFor="board-search" className="bbds-field-label">
           Buscar Boards
         </label>
-        <div className="search-input-wrapper">
+        <div style={{ position: 'relative' }}>
+          <span className="bbds-field-search-icon">🔍</span>
           <input
             id="board-search"
             type="text"
             placeholder="Digite o ID ou nome do board..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
+            className="bbds-field-input bbds-field-input--search"
           />
           {searchTerm && (
             <button
-              className="clear-search"
+              className="bbds-icon-action"
               onClick={() => setSearchTerm('')}
               title="Limpar busca"
+              style={{ position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)' }}
             >
-              
+              ✕
             </button>
           )}
         </div>
 
+        {/* Resultados da busca */}
         {searchTerm && filteredBoards.length > 0 && (
-          <div className="search-results">
-            <div className="results-header">
+          <div className="bbds-card" style={{ marginTop: '8px', maxHeight: '300px', overflow: 'auto' }}>
+            <div style={{ padding: '8px 16px', borderBottom: '1px solid var(--bbds-neutral-300, #EDEDED)', fontSize: '12px', color: 'var(--bbds-neutral-600, #999)' }}>
               {filteredBoards.length} resultado(s) encontrado(s)
             </div>
-            <div className="results-list">
-              {filteredBoards.map((board) => {
-                const isSelected = selectedBoards.some((b) => b.board_id === board.board_id);
-                return (
-                  <div
-                    key={board.board_id}
-                    className={`result-item ${isSelected ? 'selected' : ''} ${board.is_archived ? 'archived' : ''}`}
-                    onClick={() => handleBoardClick(board)}
-                  >
-                    <div className="result-checkbox">
-                      {isSelected && <span className="checkmark"></span>}
-                    </div>
-                    <div className="result-content">
-                      <div className="result-id-name">
-                        <span className="result-id">ID {board.board_id}</span>
-                        <span className="result-name">{board.name}</span>
-                      </div>
-                      {board.is_archived && (
-                        <span className="archive-badge">Arquivado</span>
-                      )}
+            {filteredBoards.map((board) => {
+              const isSelected = selectedBoards.some((b) => b.board_id === board.board_id);
+              return (
+                <div
+                  key={board.board_id}
+                  className="search-result-item"
+                  onClick={() => handleBoardClick(board)}
+                  style={{
+                    padding: '12px 16px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    borderBottom: '1px solid var(--bbds-neutral-300, #EDEDED)',
+                    background: isSelected ? 'var(--bbds-info-light, #E3F2FD)' : 'transparent',
+                    transition: 'background 150ms ease',
+                  }}
+                  onMouseEnter={(e) => !isSelected && (e.currentTarget.style.background = 'var(--bbds-surface-highlight, #F7F7F7)')}
+                  onMouseLeave={(e) => !isSelected && (e.currentTarget.style.background = 'transparent')}
+                >
+                  <div style={{
+                    width: '20px', height: '20px', borderRadius: '4px',
+                    border: isSelected ? '2px solid var(--bbds-brand-primary, #003882)' : '2px solid var(--bbds-neutral-400, #DEDEDE)',
+                    background: isSelected ? 'var(--bbds-brand-primary, #003882)' : 'transparent',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'white', fontSize: '12px', flexShrink: 0,
+                  }}>
+                    {isSelected && '✓'}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="bbds-tag bbds-tag--neutral" style={{ fontSize: '11px' }}>
+                        ID {board.board_id}
+                      </span>
+                      <span style={{ fontWeight: 500, fontSize: '14px', color: 'var(--bbds-neutral-800, #333)' }}>
+                        {board.name}
+                      </span>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                  {board.is_archived && (
+                    <span className="bbds-tag bbds-tag--warning" style={{ fontSize: '10px' }}>
+                      Arquivado
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 
         {searchTerm && filteredBoards.length === 0 && (
-          <div className="no-results">
-            <p>Nenhum board encontrado para "<strong>{searchTerm}</strong>"</p>
+          <div className="bbds-inline-message bbds-inline-message--info" style={{ marginTop: '8px' }}>
+            Nenhum board encontrado para "<strong>{searchTerm}</strong>"
           </div>
         )}
       </div>
 
+      {/* bb-button: Ação principal */}
       {selectedBoards.length > 0 && (
-        <div className="action-section">
+        <div style={{ marginTop: 'var(--bbds-spacing-lg, 24px)', textAlign: 'center' }}>
           <button
-            className="search-button-v2"
+            className="bbds-btn bbds-btn-primary bbds-btn-lg"
             onClick={handleSearch}
             disabled={loading}
+            style={{ minWidth: '280px' }}
           >
             {loading ? (
-              <> Buscando...</>
+              <>
+                <div className="bbds-spinner bbds-spinner--sm" style={{ borderTopColor: 'white' }}></div>
+                Buscando...
+              </>
             ) : (
-              <> Buscar Iniciativas dos {selectedBoards.length} Board(s)</>
+              <>Buscar Iniciativas dos {selectedBoards.length} Board(s)</>
             )}
           </button>
         </div>

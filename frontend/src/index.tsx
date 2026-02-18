@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import './styles/bbds-components.css';
 import App from './App';
 
 const root = ReactDOM.createRoot(

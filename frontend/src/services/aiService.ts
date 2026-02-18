@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { ProcessedCard, AIEvaluationResult } from '../types/Card';
+import { stripHtml } from '../utils/textUtils';
 
 const AI_API_URL = 'https://generabb-acs.gbb.servicos.bb.com.br/gateway/agent';
 
@@ -106,7 +108,7 @@ class AIService {
       const response = await axios.post<any>(
         '/api/ai/agent',
         request,
-        { headers }
+        { headers, timeout: 120000 } // 120s timeout para IA
       );
 
       console.log('[AIService] Resposta recebida:', response.data);
@@ -341,7 +343,7 @@ Faça APENAS a primeira pergunta sobre a ENTREGA. Não faça todas as perguntas 
       const response = await axios.post<any>(
         '/api/ai/agent',
         request,
-        { headers }
+        { headers, timeout: 120000 } // 120s timeout para IA
       );
 
       if (!response.data.success) {
@@ -423,6 +425,145 @@ export const resetReportConversation = (conversationKey?: string) => {
     service.resetConversation();
     reportServiceInstances.delete(key);
   }
+};
+
+// --- Batch AI Evaluation ---
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Parses the AI response text to extract structured fields.
+ * Handles multiple format variations from the AI, including markdown bold (**).
+ */
+const parseAIResponse = (response: string): Omit<AIEvaluationResult, 'status'> => {
+  // Strip markdown bold markers before parsing for cleaner extraction
+  const cleanResponse = response.replace(/\*\*/g, '');
+  
+  // Try multiple regex patterns for classification
+  const classificacaoMatch = cleanResponse.match(/Classifica[çc][aã]o:\s*(.+?)(?=\n|$)/i);
+  
+  // Try multiple patterns for PD&I indication
+  const indicacaoMatch = cleanResponse.match(/Indica[çc][aã]o\s*(?:de\s*)?PD&?I:\s*(.+?)(?=\n|$)/i)
+    || cleanResponse.match(/PD&?I:\s*(sim|n[aã]o)\b/i)
+    || cleanResponse.match(/\b(eleg[ií]vel|n[aã]o\s*eleg[ií]vel)\b/i);
+
+  let justificativa = '';
+  let sugestao = '';
+
+  const lowerClean = cleanResponse.toLowerCase();
+  const justIndex = lowerClean.indexOf('justificativa:');
+  const sugestaoIndex = lowerClean.indexOf('sugestão de melhoria:');
+  const sugestaoAlt = lowerClean.indexOf('sugestao de melhoria:');
+  const sugIdx = sugestaoIndex !== -1 ? sugestaoIndex : sugestaoAlt;
+
+  if (justIndex !== -1 && sugIdx !== -1) {
+    justificativa = cleanResponse.substring(justIndex + 14, sugIdx).trim();
+    sugestao = cleanResponse.substring(sugIdx + 22).trim();
+  } else if (justIndex !== -1) {
+    justificativa = cleanResponse.substring(justIndex + 14).trim();
+  } else if (sugIdx !== -1) {
+    sugestao = cleanResponse.substring(sugIdx + 22).trim();
+  }
+
+  return {
+    classification: classificacaoMatch?.[1]?.trim(),
+    pdiIndication: indicacaoMatch?.[1]?.trim(),
+    justification: justificativa || undefined,
+    suggestion: sugestao || undefined,
+    rawResponse: response,
+  };
+};
+
+/**
+ * Determines status from the parsed AI evaluation.
+ * Uses broader matching to handle varied AI response formats.
+ */
+const determineStatus = (parsed: Omit<AIEvaluationResult, 'status'>): AIEvaluationResult['status'] => {
+  // First check parsed pdiIndication field
+  if (parsed.pdiIndication) {
+    const indication = parsed.pdiIndication.toLowerCase().trim();
+    if (indication === 'sim' || indication.startsWith('sim')) return 'eligible';
+    if (indication === 'não' || indication.startsWith('não') || indication === 'nao' || indication.startsWith('nao')) return 'not-eligible';
+    if (indication.includes('elegível') || indication.includes('elegivel')) return 'eligible';
+    if (indication.includes('não elegível') || indication.includes('nao elegivel')) return 'not-eligible';
+  }
+  
+  // Fallback: scan the raw response for eligibility signals (strip markdown)
+  if (parsed.rawResponse) {
+    const raw = parsed.rawResponse.replace(/\*\*/g, '').toLowerCase();
+    // Strong positive signals
+    if (raw.includes('indicação de pd&i: sim') || raw.includes('indicação de pdi: sim')) return 'eligible';
+    if (raw.includes('indicação de pd&i: não') || raw.includes('indicação de pdi: não') ||
+        raw.includes('indicação de pd&i: nao') || raw.includes('indicação de pdi: nao')) return 'not-eligible';
+    // Weaker signals from the response body
+    if (raw.includes('é elegível') || raw.includes('projeto é elegível') || raw.includes('elegível para pd&i')) return 'eligible';
+    if (raw.includes('não é elegível') || raw.includes('não elegível') || raw.includes('nao elegivel')) return 'not-eligible';
+  }
+
+  return 'pending';
+};
+
+/**
+ * Evaluates a single card using the AI service.
+ * Creates its own AIService instance to avoid conversation conflicts.
+ * Does NOT retry on 429 — the batch loop handles rate limit timing.
+ * Only retries on non-429 errors (network issues, 5xx, etc.).
+ */
+const evaluateSingleCard = async (card: ProcessedCard): Promise<AIEvaluationResult> => {
+  const cleanDescription = stripHtml(card.description || '').trim();
+
+  if (!cleanDescription) {
+    return {
+      status: 'pending',
+      rawResponse: 'Sem descrição disponível para avaliação.',
+    };
+  }
+
+  try {
+    const service = new AIService();
+    const response = await service.sendMessage(cleanDescription);
+    const parsed = parseAIResponse(response);
+    const status = determineStatus(parsed);
+    return { ...parsed, status };
+  } catch (error: any) {
+    console.error(`[BatchAI] Erro ao avaliar card #${card.id}:`, error.message);
+    return {
+      status: 'error',
+      rawResponse: `Erro: ${error?.message || 'Falha ao comunicar com a IA'}`,
+    };
+  }
+};
+
+/**
+ * Batch evaluates multiple cards respecting the API rate limit of 5 req/min.
+ * Sends 1 request at a time with a 12s delay to stay within limits.
+ * Backend retries handle transient errors; frontend retries handle 429s.
+ * Calls onProgress for each card as it completes.
+ */
+export const batchEvaluateCards = async (
+  cards: ProcessedCard[],
+  onProgress?: (cardId: number, result: AIEvaluationResult) => void,
+  _concurrency: number = 1
+): Promise<Map<number, AIEvaluationResult>> => {
+  const results = new Map<number, AIEvaluationResult>();
+  const DELAY_BETWEEN_CALLS_MS = 13000; // 13s entre chamadas → máx ~4.6 req/min (limite: 5/min)
+
+  for (let i = 0; i < cards.length; i++) {
+    const card = cards[i];
+
+    const result = await evaluateSingleCard(card);
+    results.set(card.id, result);
+    if (onProgress) {
+      onProgress(card.id, result);
+    }
+
+    // Respect rate limit — skip delay after last card
+    if (i < cards.length - 1) {
+      await sleep(DELAY_BETWEEN_CALLS_MS);
+    }
+  }
+
+  return results;
 };
 
 export default new AIService();

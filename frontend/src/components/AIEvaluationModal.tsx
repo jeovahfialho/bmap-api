@@ -11,27 +11,30 @@ interface AIEvaluationModalProps {
 
 // Função para formatar a resposta da IA
 const formatAIResponse = (response: string): JSX.Element => {
-  // Trata quebras de linha
-  const lines = response.split('\n');
+  // Strip markdown bold markers for cleaner parsing
+  const cleanResponse = response.replace(/\*\*/g, '');
   
   // Tenta extrair os campos estruturados
-  const classificacaoMatch = response.match(/Classificação:\s*(.+?)(?=\n|$)/i);
-  const indicacaoMatch = response.match(/Indicação de PD&I:\s*(.+?)(?=\n|$)/i);
+  const classificacaoMatch = cleanResponse.match(/Classifica[çc][aã]o:\s*(.+?)(?=\n|$)/i);
+  const indicacaoMatch = cleanResponse.match(/Indica[çc][aã]o\s*(?:de\s*)?PD&?I:\s*(.+?)(?=\n|$)/i);
   
   // Para justificativa e sugestão, usa uma abordagem diferente
   let justificativa = '';
   let sugestao = '';
   
-  const justIndex = response.toLowerCase().indexOf('justificativa:');
-  const sugestaoIndex = response.toLowerCase().indexOf('sugestão de melhoria:');
+  const lowerClean = cleanResponse.toLowerCase();
+  const justIndex = lowerClean.indexOf('justificativa:');
+  const sugestaoIndex = lowerClean.indexOf('sugestão de melhoria:');
+  const sugestaoAlt = lowerClean.indexOf('sugestao de melhoria:');
+  const sugIdx = sugestaoIndex !== -1 ? sugestaoIndex : sugestaoAlt;
   
-  if (justIndex !== -1 && sugestaoIndex !== -1) {
-    justificativa = response.substring(justIndex + 14, sugestaoIndex).trim();
-    sugestao = response.substring(sugestaoIndex + 22).trim();
+  if (justIndex !== -1 && sugIdx !== -1) {
+    justificativa = cleanResponse.substring(justIndex + 14, sugIdx).trim();
+    sugestao = cleanResponse.substring(sugIdx + 22).trim();
   } else if (justIndex !== -1) {
-    justificativa = response.substring(justIndex + 14).trim();
-  } else if (sugestaoIndex !== -1) {
-    sugestao = response.substring(sugestaoIndex + 22).trim();
+    justificativa = cleanResponse.substring(justIndex + 14).trim();
+  } else if (sugIdx !== -1) {
+    sugestao = cleanResponse.substring(sugIdx + 22).trim();
   }
 
   if (classificacaoMatch || indicacaoMatch) {

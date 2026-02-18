@@ -63,6 +63,7 @@ const App: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
+      setShowResults(true); // Navega imediatamente para a tela de resultados
       const response = await cardsService.getInitiatives(filters);
       if (response.success) {
         setCards(response.data);
@@ -71,7 +72,6 @@ const App: React.FC = () => {
         } else {
           setPagination(null);
         }
-        setShowResults(true);
       } else {
         throw new Error('Resposta da API não foi bem-sucedida');
       }
@@ -95,11 +95,7 @@ const App: React.FC = () => {
 
   // Se estiver mostrando resultados
   if (showResults && selectedBoards.length > 0) {
-    if (loading) {
-      return <LoadingSpinner />;
-    }
-    
-    if (error) {
+    if (error && cards.length === 0) {
       return <ErrorMessage message={error} onRetry={handleBackToSearch} />;
     }
 
@@ -109,6 +105,7 @@ const App: React.FC = () => {
         selectedBoards={selectedBoards}
         pagination={pagination}
         onBackToSearch={handleBackToSearch}
+        isLoadingCards={loading}
       />
     );
   }
@@ -116,28 +113,44 @@ const App: React.FC = () => {
   // Tela inicial de seleção
   return (
     <div className="App">
-      <header className="app-header">
-        <h1>BusinessMap - Iniciativas e Histórias</h1>
-        <p>Visualização das iniciativas e suas histórias relacionadas</p>
+      {/* bb-navbar-header */}
+      <header className="bbds-navbar">
+        <div className="bbds-navbar-content">
+          <div className="bbds-navbar-brand">
+            <div className="bbds-navbar-logo">BB</div>
+            <div>
+              <div className="bbds-navbar-title">BusinessMap</div>
+              <div className="bbds-navbar-subtitle">Iniciativas e Histórias</div>
+            </div>
+          </div>
+          <div className="bbds-navbar-actions">
+            <span className="bbds-tag bbds-tag--info" style={{ fontSize: '11px' }}>
+              {boards.length} boards
+            </span>
+          </div>
+        </div>
       </header>
 
-      <main className="app-main">
-        {boardsLoading ? (
-          <LoadingSpinner />
-        ) : error ? (
-          <ErrorMessage message={error} onRetry={fetchBoards} />
-        ) : (
-          <BoardSelection 
-            boards={boards}
-            selectedBoards={selectedBoards}
-            onBoardSelect={setSelectedBoards}
-            onSearch={fetchCards}
-            loading={loading}
-          />
-        )}
+      {/* bb-layout */}
+      <div className="bbds-layout">
+        <main className="bbds-layout-content">
+          {boardsLoading ? (
+            <LoadingSpinner />
+          ) : error ? (
+            <ErrorMessage message={error} onRetry={fetchBoards} />
+          ) : (
+            <BoardSelection 
+              boards={boards}
+              selectedBoards={selectedBoards}
+              onBoardSelect={setSelectedBoards}
+              onSearch={fetchCards}
+              loading={loading}
+            />
+          )}
 
-        {loading && <LoadingSpinner />}
-      </main>
+          {loading && <LoadingSpinner />}
+        </main>
+      </div>
 
       {/* Assistente IA */}
       <AIChat />
